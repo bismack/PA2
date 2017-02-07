@@ -5,14 +5,31 @@
 #include <iostream>
 #include <stdio.h>
 #include <omp.h>
+#include <time.h>
+#include <unistd.h>
 
 using namespace std;
 
-void Hello() {
+string alphabet = {"abcdefgh"};
+string S;
+int stringLength;
+
+void update(char letter, int my_rank) {
+   S += letter;
+   stringLength++; 
+   printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i \n", my_rank, letter, S.c_str(), stringLength);
+}
+
+void constructS() {
    int my_rank = omp_get_thread_num();
-   int thread_count = omp_get_num_threads();
-   
-   printf("Hello thread: %d of %d\n", my_rank, thread_count);
+   const char letter = alphabet[my_rank];
+
+   srand(time(NULL));
+   unsigned int microsleep = rand()%500+100;
+   usleep(microsleep);
+
+   #pragma omp critical
+   update(letter,my_rank);
 
 }
 
@@ -21,6 +38,10 @@ int main(int argc, char* argv[]) {
 
    int thread_count = strtol(argv[1], NULL, 10);
 
-   #pragma omp parallel
-   Hello();
+   #pragma omp parallel num_threads(thread_count)
+   constructS();
+
+   printf("--------String: %s\n", S.c_str());
+
+   return 0;
 }
