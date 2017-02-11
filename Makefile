@@ -6,6 +6,7 @@ all: pa2.x
 
 pa2.x: $(OBJS) new
 	$(CC) $(CCFLAGS) $(OBJS) -o pa2.x 
+	./pa2.x 0 3 6 3 a b c
 
 pa2.o: pa2.cpp 
 	$(CC) $(CCFLAGS) -c pa2.cpp

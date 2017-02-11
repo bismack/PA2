@@ -221,33 +221,33 @@ int main(int argc, char* argv[]) {
    writeOutputFile();
 
    //ENFORCING S
-   printf("\n---------------ENFORCING S: \n");
-   S = "";
-   counter = 0;
-   currStringLength = 0;
-   stringLengthMaxed = false;
-   numOfSegmentsSatisfied = 0;
-   occurOfC0=0; occurOfC1=0; occurOfC2=0;
+   // printf("\n---------------ENFORCING S: \n");
+   // S = "";
+   // counter = 0;
+   // currStringLength = 0;
+   // stringLengthMaxed = false;
+   // numOfSegmentsSatisfied = 0;
+   // occurOfC0=0; occurOfC1=0; occurOfC2=0;
 
-   #pragma omp parallel num_threads(N)
-   constructSE();
+   // #pragma omp parallel num_threads(N)
+   // constructSE();
 
-   printf("\n---------------String S CREATED: %s\n", S.c_str());
+   // printf("\n---------------String S CREATED: %s\n", S.c_str());
 
-   while (counter < M/N) {
-      #pragma omp parallel num_threads(N)
-      checkSegmentProp();
+   // while (counter < M/N) {
+   //    #pragma omp parallel num_threads(N)
+   //    checkSegmentProp();
 
-      counter++;
-      if ((counter==M/N) && (M%N!=0)) {
-         #pragma omp parallel for
-         for (int i=0; i < M%N; i++) {
-            checkSegmentProp();
-         }
-      }
-   }
-   counter = 0;
-   writeOutputFile();
+   //    counter++;
+   //    if ((counter==M/N) && (M%N!=0)) {
+   //       #pragma omp parallel for
+   //       for (int i=0; i < M%N; i++) {
+   //          checkSegmentProp();
+   //       }
+   //    }
+   // }
+   // counter = 0;
+   // writeOutputFile();
 
    return 0;
 }
