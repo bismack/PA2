@@ -211,13 +211,14 @@ int main(int argc, char* argv[]) {
       checkSegmentProp();
 
       counter++;
-      if ((counter==M/N) && (M%N!=0)) {
-         #pragma omp parallel for
-         for (int i=0; i < M%N; i++){
-            checkSegmentProp();
-         }
+   }
+   if ((counter==M/N) && (M%N!=0)) {
+      #pragma omp parallel for
+      for (int i=0; i < M%N; i++){
+         checkSegmentProp();
       }
    }
+
    writeOutputFile();
 
    //ENFORCING S
