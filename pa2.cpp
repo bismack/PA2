@@ -58,15 +58,15 @@ void constructS() {
 
    while (stringLengthMaxed == false) {
       unsigned int microsleep = rand() % 500 + 100;
-      printf("THREAD %i PUT TO SLEEP FOR: %i\n", thread_id, microsleep);
+      // printf("THREAD %i PUT TO SLEEP FOR: %i\n", thread_id, microsleep);
       usleep(microsleep);
 
-      omp_set_lock(&mutex);
+      // omp_set_lock(&mutex);
       if (!stringLengthMaxed) {
          #pragma omp critical
          update(letter,thread_id);
       }
-      omp_unset_lock(&mutex);
+      // omp_unset_lock(&mutex);
    }
 }
 
@@ -205,7 +205,7 @@ int main(int argc, char* argv[]) {
 
    inSt.L = L;
    inSt.N = N;
-   omp_init_lock(&mutex);
+   // omp_init_lock(&mutex);
    while (counter < M/N) {
       #pragma omp parallel num_threads(N)
       checkSegmentProp();
