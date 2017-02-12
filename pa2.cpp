@@ -61,12 +61,10 @@ void constructS() {
       // printf("THREAD %i PUT TO SLEEP FOR: %i\n", thread_id, microsleep);
       usleep(microsleep);
 
-      // omp_set_lock(&mutex);
       if (!stringLengthMaxed) {
          #pragma omp critical
          update(letter,thread_id);
       }
-      // omp_unset_lock(&mutex);
    }
 }
 
@@ -154,27 +152,25 @@ char chooseChar(int ranA, int ranB, int ranC) {
 void constructSE() {
    int thread_id = omp_get_thread_num();
 
-   //unsigned int distrA = rand() % 500 + 100;
-   //uniform_int_distribution<> distrA(4, ((inSt.N<4) ? 4 : inSt.N) );
-   //uniform_int_distribution<> distrC(1, 2);
+   while (counter<inSt.L) {
+   unsigned int distrA = rand()%((inSt.N<4) ? 4 : inSt.N)+4;
+   unsigned int distrB = rand()%500+100;
+   unsigned int distrC = rand()%2+1;
 
-   while (stringLengthMaxed == false) {
-      unsigned int microsleep = rand() % 500 + 100;
-      printf("THREAD PUT TO SLEEP FOR: %i\n", microsleep);
-      usleep(microsleep);
+   // printf("THREAD PUT TO SLEEP FOR: %i\n", microsleep);
 
-      omp_set_lock(&mutex);
-      if (!stringLengthMaxed) {
-         char letter = chooseChar(4, 154, 2);
-         currStringLength++;
-         S += letter;
-         printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i \n", thread_id, letter, S.c_str(), currStringLength);
-      }
+   omp_set_lock(&mutex);
+      char letter = chooseChar(distrA, distrB, distrC);
+      currStringLength++;
+      counter++;
+   omp_unset_lock(&mutex);
 
-      if (currStringLength == totalStringLength) {
-         stringLengthMaxed = true; 
-      }
-      omp_unset_lock(&mutex);
+   usleep(distrB);
+
+   omp_set_lock(&mutex);
+      S += letter;
+      printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i \n", thread_id, letter, S.c_str(), currStringLength);
+   omp_unset_lock(&mutex);
    }
 }
 
@@ -205,7 +201,6 @@ int main(int argc, char* argv[]) {
 
    inSt.L = L;
    inSt.N = N;
-   // omp_init_lock(&mutex);
    while (counter < M/N) {
       #pragma omp parallel num_threads(N)
       checkSegmentProp();
@@ -218,37 +213,47 @@ int main(int argc, char* argv[]) {
          checkSegmentProp();
       }
    }
-
    writeOutputFile();
 
+
+
+
+
+
    //ENFORCING S
-   // printf("\n---------------ENFORCING S: \n");
-   // S = "";
-   // counter = 0;
-   // currStringLength = 0;
-   // stringLengthMaxed = false;
-   // numOfSegmentsSatisfied = 0;
-   // occurOfC0=0; occurOfC1=0; occurOfC2=0;
+   printf("\n---------------ENFORCING S: \n");
+   S = "";
+   currStringLength = 0;
+   stringLengthMaxed = false;
+   numOfSegmentsSatisfied = 0;
 
-   // #pragma omp parallel num_threads(N)
-   // constructSE();
+   while (numOfSegmentsSatisfied < M) {
+      counter=0;
+      occurOfC0=0; occurOfC1=0; occurOfC2=0;
+      #pragma omp parallel num_threads(N)
+      constructSE();
 
-   // printf("\n---------------String S CREATED: %s\n", S.c_str());
+      numOfSegmentsSatisfied++;
+   }
+   numOfSegmentsSatisfied = 0;
+   counter=0;
 
-   // while (counter < M/N) {
-   //    #pragma omp parallel num_threads(N)
-   //    checkSegmentProp();
 
-   //    counter++;
-   //    if ((counter==M/N) && (M%N!=0)) {
-   //       #pragma omp parallel for
-   //       for (int i=0; i < M%N; i++) {
-   //          checkSegmentProp();
-   //       }
-   //    }
-   // }
-   // counter = 0;
-   // writeOutputFile();
+   printf("\n---------------String S CREATED: %s\n", S.c_str());
+
+   while (counter < M/N) {
+      #pragma omp parallel num_threads(N)
+      checkSegmentProp();
+
+      counter++;
+   }
+   if ((counter==M/N) && (M%N!=0)) {
+      #pragma omp parallel for
+      for (int i=0; i < M%N; i++){
+         checkSegmentProp();
+      }
+   }
+   writeOutputFile();
 
    return 0;
 }
