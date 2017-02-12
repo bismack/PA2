@@ -89,8 +89,12 @@ char chooseChar(int ranA, int ranC) {
 
    switch (inSt.F) {
       case 0:
-      if ((S[currStringLength]=='\0')&&(currStringLength%inSt.L==0)) {
+      if (counter==0) {
          chosenChar=inSt.c2; occurOfC2++; 
+      } else if (counter==1) {
+         chosenChar=inSt.c1; occurOfC1++; 
+      } else if (counter==2) {
+         chosenChar=inSt.c0; occurOfC0++; 
       } else if (occurOfC0 + occurOfC1 < occurOfC2) {
          if (ranC==1) {
             chosenChar=inSt.c0; occurOfC0++;
@@ -103,8 +107,12 @@ char chooseChar(int ranA, int ranC) {
       break;
       
       case 1:
-      if ((S[currStringLength]=='\0')&&(currStringLength%inSt.L==0)) {
-            chosenChar=inSt.c1; occurOfC1++; 
+      if (counter==0||counter==3||counter==4) {
+         chosenChar=inSt.c2; occurOfC2++; 
+      } else if (counter==1) {
+         chosenChar=inSt.c1; occurOfC1++; 
+      } else if (counter==2) {
+         chosenChar=inSt.c0; occurOfC0++; 
       } else if (occurOfC0 + 2*occurOfC1 < occurOfC2) {
          if (occurOfC0 + 2*occurOfC1 < occurOfC2+1) {
             chosenChar=inSt.c0; occurOfC0++;}
@@ -116,8 +124,12 @@ char chooseChar(int ranA, int ranC) {
       break;
 
       case 2:
-      if ((S[currStringLength]=='\0')&&(currStringLength%inSt.L==0)) {
+      if (counter==0) {
          chosenChar=inSt.c2; occurOfC2++; 
+      } else if (counter==1) {
+         chosenChar=inSt.c1; occurOfC1++; 
+      } else if (counter==2) {
+         chosenChar=inSt.c0; occurOfC0++; 
       } else if (occurOfC0 * occurOfC1 < occurOfC2) {
          if ((occurOfC0+1) * occurOfC1 == occurOfC2) {
             chosenChar=inSt.c0; occurOfC0++;
@@ -129,8 +141,12 @@ char chooseChar(int ranA, int ranC) {
       break;
       
       case 3:
-      if ((S[currStringLength]=='\0')&&(currStringLength%inSt.L==0)) {
-            chosenChar=inSt.c1; occurOfC1++; 
+      if (counter==0||counter==4) {
+            chosenChar=inSt.c2; occurOfC2++;
+      } else if (counter==3) {
+         chosenChar=inSt.c1; occurOfC1++; 
+      } else if (counter==1||counter==2) {
+         chosenChar=inSt.c0; occurOfC0++;  
       } else if (occurOfC0 - occurOfC1 < occurOfC2) {
          if (occurOfC0+1 - occurOfC1 < occurOfC2) {
             chosenChar=inSt.c1; occurOfC1++;
@@ -156,11 +172,8 @@ void constructSE() {
    unsigned int distrA = (inSt.N<=4) ? 4 : rand()%(inSt.N-3)+4;
    unsigned int distrC = rand()%2+1;
 
-   // printf("THREAD PUT TO SLEEP FOR: %i\n", microsleep);
-
    omp_set_lock(&mutex);
       char letter = chooseChar(distrA, distrC);
-      currStringLength++;
       counter++;
    omp_unset_lock(&mutex);
 
@@ -168,8 +181,9 @@ void constructSE() {
    usleep(distrB);
 
    omp_set_lock(&mutex);
-      S += letter;
-      printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i   ---- %i \n", thread_id, letter, S.c_str(), currStringLength, distrA);
+      S += letter;      
+      currStringLength++;
+      printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i   ---- %i \n", thread_id, letter, S.c_str(), currStringLength, counter);
    omp_unset_lock(&mutex);
    }
 }
