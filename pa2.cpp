@@ -10,6 +10,13 @@
 #include <cstdlib>
 #include <fstream>
 
+#ifdef DEBUG
+   #define D(x)
+#else
+   #define D(x) x
+#endif
+
+#include "choose.h"
 #include "verify.h"
 #include "valinput.h"
 
@@ -25,12 +32,6 @@ bool stringLengthMaxed = false;
 int occurOfC0, occurOfC1, occurOfC2;
 string alphabet = {"abcdefgh"};
 
-struct INPUT {
-	int F;
-	int N;
-	int L;
-	char c0, c1, c2;
-};
 INPUT inSt;
 
 void writeOutputFile() {
@@ -49,7 +50,7 @@ void update(char letter, int thread_id) {
       stringLengthMaxed = true; 
    }
    
-   printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i \n", thread_id, letter, S.c_str(), currStringLength);
+   D(printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i \n", thread_id, letter, S.c_str(), currStringLength));
 }
 
 void constructS() {
@@ -79,100 +80,34 @@ void checkSegmentProp() {
    }
    omp_unset_lock(&mutex);
 
-   printf("-----THREAD: %i Substr: %s   Satisfied: %i\n", thread_id, strSeg.c_str(), numOfSegmentsSatisfied); 
+   D(printf("-----THREAD: %i Substr: %s   Satisfied: %i\n", thread_id, strSeg.c_str(), numOfSegmentsSatisfied)); 
 
 }
 
-char chooseChar(int ranA, int ranC) {
-   char chosenChar='\0';
-
-   switch (inSt.F) {
-      case 0:
-      if (counter==0) {
-         chosenChar=inSt.c2; occurOfC2++; 
-      } else if (counter==1) {
-         chosenChar=inSt.c1; occurOfC1++; 
-      } else if (counter==2) {
-         chosenChar=inSt.c0; occurOfC0++; 
-      } else if (occurOfC0 + occurOfC1 < occurOfC2) {
-         if (ranC==1) {
-            chosenChar=inSt.c0; occurOfC0++;
-         } else if (ranC==2) {
-            chosenChar=inSt.c1; occurOfC1++; 
-         }
-      } else if (((occurOfC0 + occurOfC1 >= occurOfC2)&&(inSt.N<4)) || (occurOfC0 + occurOfC1 > occurOfC2)) {
-         chosenChar=inSt.c2; occurOfC2++;
-      }
-      break;
-      
-      case 1:
-      if (counter==0||counter==3||counter==4) {
-         chosenChar=inSt.c2; occurOfC2++; 
-      } else if (counter==1) {
-         chosenChar=inSt.c1; occurOfC1++; 
-      } else if (counter==2) {
-         chosenChar=inSt.c0; occurOfC0++; 
-      } else if (occurOfC0 + 2*occurOfC1 < occurOfC2) {
-         if (occurOfC0 + 2*occurOfC1 < occurOfC2+1) {
-            chosenChar=inSt.c0; occurOfC0++;}
-         else if (occurOfC0 + 2*occurOfC1 < occurOfC2+2){
-            chosenChar=inSt.c1; occurOfC1++;}
-      } else if (((occurOfC0 + 2*occurOfC1 >= occurOfC2)&&(inSt.N<4)) ||(occurOfC0 + 2*occurOfC1 > occurOfC2)) {
-         chosenChar=inSt.c2; occurOfC2++;
-      }
-      break;
-
-      case 2:
-      if (counter==0) {
-         chosenChar=inSt.c2; occurOfC2++; 
-      } else if (counter==1) {
-         chosenChar=inSt.c1; occurOfC1++; 
-      } else if (counter==2) {
-         chosenChar=inSt.c0; occurOfC0++; 
-      } else if (occurOfC0 * occurOfC1 < occurOfC2) {
-         if ((occurOfC0+1) * occurOfC1 == occurOfC2) {
-            chosenChar=inSt.c0; occurOfC0++;
-         } else if ((occurOfC0 * (occurOfC1+1) == occurOfC2) || ((occurOfC0+1) * (occurOfC1+1) == occurOfC2)) {
-            chosenChar=inSt.c1; occurOfC1++; }
-      } else if (((occurOfC0 * occurOfC1 >= occurOfC2)&&(inSt.N<4)) || (occurOfC0 * occurOfC1 > occurOfC2)) {
-         chosenChar=inSt.c2; occurOfC2++;
-      }
-      break;
-      
-      case 3:
-      if (counter==0||counter==4) {
-            chosenChar=inSt.c2; occurOfC2++;
-      } else if (counter==3) {
-         chosenChar=inSt.c1; occurOfC1++; 
-      } else if (counter==1||counter==2) {
-         chosenChar=inSt.c0; occurOfC0++;  
-      } else if (occurOfC0 - occurOfC1 < occurOfC2) {
-         if (occurOfC0+1 - occurOfC1 < occurOfC2) {
-            chosenChar=inSt.c1; occurOfC1++;
-         } else if (occurOfC0 - occurOfC1 < occurOfC2+1) {
-            chosenChar=inSt.c0; occurOfC0++; }
-      } else if (((occurOfC0 - occurOfC1 >= occurOfC2)&&(inSt.N<4)) || (occurOfC0 - occurOfC1 > occurOfC2)) {
-         chosenChar=inSt.c2; occurOfC2++;
-      }
-      break;
+void checkString(int M, int N) {
+   while (counter < M/N) {
+      #pragma omp parallel num_threads(N)
+      checkSegmentProp();
+      counter++;
    }
-
-   if (chosenChar=='\0') {       
-      chosenChar=alphabet[ranA-1];  
-   }    
-
-   return chosenChar; 
+   if ((counter==M/N) && (M%N!=0)) {
+      #pragma omp parallel for
+      for (int i=0; i < M%N; i++){
+         checkSegmentProp();
+      }
+   }
+   writeOutputFile();
 }
 
 void constructSE() {
-   int thread_id = omp_get_thread_num();
+   D(int thread_id = omp_get_thread_num());
 
    while (counter<inSt.L) {
    unsigned int distrA = (inSt.N<=4) ? 4 : rand()%(inSt.N-3)+4;
    unsigned int distrC = rand()%2+1;
 
    omp_set_lock(&mutex);
-      char letter = chooseChar(distrA, distrC);
+      char letter = chooseChar(distrA, distrC, inSt);
       counter++;
    omp_unset_lock(&mutex);
 
@@ -182,7 +117,7 @@ void constructSE() {
    omp_set_lock(&mutex);
       S += letter;      
       currStringLength++;
-      printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i   ---- %i \n", thread_id, letter, S.c_str(), currStringLength, counter);
+      D(printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i   ---- %i \n", thread_id, letter, S.c_str(), currStringLength, counter));
    omp_unset_lock(&mutex);
    }
 }
@@ -209,26 +144,13 @@ int main(int argc, char* argv[]) {
    srand(time(0));
    #pragma omp parallel num_threads(N)
    constructS();
-   
-
    printf("\n---------------String S CREATED: %s\n", S.c_str());
 
    inSt.L = L;
    inSt.N = N;
-   while (counter < M/N) {
-      #pragma omp parallel num_threads(N)
-      checkSegmentProp();
 
-      counter++;
-   }
-   if ((counter==M/N) && (M%N!=0)) {
-      #pragma omp parallel for
-      for (int i=0; i < M%N; i++){
-         checkSegmentProp();
-      }
-   }
-   writeOutputFile();
-
+   //check the randomly generated string
+   checkString(M, N);
 
    //ENFORCING S
    printf("\n---------------ENFORCING S: \n");
@@ -247,23 +169,10 @@ int main(int argc, char* argv[]) {
    }
    numOfSegmentsSatisfied = 0;
    counter=0;
-
-
    printf("\n---------------String S CREATED: %s\n", S.c_str());
 
-   while (counter < M/N) {
-      #pragma omp parallel num_threads(N)
-      checkSegmentProp();
-
-      counter++;
-   }
-   if ((counter==M/N) && (M%N!=0)) {
-      #pragma omp parallel for
-      for (int i=0; i < M%N; i++){
-         checkSegmentProp();
-      }
-   }
-   writeOutputFile();
+   //check the enforced string
+   checkString(M, N);
 
    return 0;
 }
