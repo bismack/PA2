@@ -23,7 +23,7 @@ int totalStringLength;
 int numOfSegmentsSatisfied = 0;
 bool stringLengthMaxed = false;
 int occurOfC0, occurOfC1, occurOfC2;
-char alphabet[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+string alphabet = {"abcdefgh"};
 
 struct INPUT {
 	int F;
@@ -84,8 +84,8 @@ void checkSegmentProp() {
 
 }
 
-char chooseChar(int ranA, int ranB, int ranC) {
-   char chosenChar;
+char chooseChar(int ranA, int ranC) {
+   char chosenChar='\0';
 
    switch (inSt.F) {
       case 0:
@@ -143,7 +143,7 @@ char chooseChar(int ranA, int ranB, int ranC) {
    }
 
    if (chosenChar=='\0') {       
-      chosenChar=alphabet[ranA-1];    
+      chosenChar=alphabet[ranA-1];  
    }    
 
    return chosenChar; 
@@ -153,23 +153,23 @@ void constructSE() {
    int thread_id = omp_get_thread_num();
 
    while (counter<inSt.L) {
-   unsigned int distrA = rand()%((inSt.N<4) ? 4 : inSt.N)+4;
-   unsigned int distrB = rand()%500+100;
+   unsigned int distrA = (inSt.N<=4) ? 4 : rand()%(inSt.N-3)+4;
    unsigned int distrC = rand()%2+1;
 
    // printf("THREAD PUT TO SLEEP FOR: %i\n", microsleep);
 
    omp_set_lock(&mutex);
-      char letter = chooseChar(distrA, distrB, distrC);
+      char letter = chooseChar(distrA, distrC);
       currStringLength++;
       counter++;
    omp_unset_lock(&mutex);
 
+   unsigned int distrB = rand()%500+100;
    usleep(distrB);
 
    omp_set_lock(&mutex);
       S += letter;
-      printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i \n", thread_id, letter, S.c_str(), currStringLength);
+      printf("THREAD %i APPENDED LETTER: %c - SEGMENT S: %s %i   ---- %i \n", thread_id, letter, S.c_str(), currStringLength, distrA);
    omp_unset_lock(&mutex);
    }
 }
@@ -218,8 +218,6 @@ int main(int argc, char* argv[]) {
 
 
 
-
-
    //ENFORCING S
    printf("\n---------------ENFORCING S: \n");
    S = "";
@@ -237,6 +235,8 @@ int main(int argc, char* argv[]) {
    }
    numOfSegmentsSatisfied = 0;
    counter=0;
+
+
 
 
    printf("\n---------------String S CREATED: %s\n", S.c_str());
