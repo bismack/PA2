@@ -58,7 +58,6 @@ void constructS() {
 
    while (stringLengthMaxed == false) {
       unsigned int microsleep = rand() % 500 + 100;
-      // printf("THREAD %i PUT TO SLEEP FOR: %i\n", thread_id, microsleep);
       usleep(microsleep);
 
       if (!stringLengthMaxed) {
@@ -210,6 +209,7 @@ int main(int argc, char* argv[]) {
    srand(time(0));
    #pragma omp parallel num_threads(N)
    constructS();
+   
 
    printf("\n---------------String S CREATED: %s\n", S.c_str());
 
@@ -230,8 +230,6 @@ int main(int argc, char* argv[]) {
    writeOutputFile();
 
 
-
-
    //ENFORCING S
    printf("\n---------------ENFORCING S: \n");
    S = "";
@@ -249,8 +247,6 @@ int main(int argc, char* argv[]) {
    }
    numOfSegmentsSatisfied = 0;
    counter=0;
-
-
 
 
    printf("\n---------------String S CREATED: %s\n", S.c_str());
