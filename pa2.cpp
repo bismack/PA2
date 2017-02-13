@@ -158,10 +158,27 @@ int main(int argc, char* argv[]) {
    currStringLength = 0;
    stringLengthMaxed = false;
    numOfSegmentsSatisfied = 0;
+   int total=0,i=0,j=0;
 
+   if (inSt.F==2) {
+      while (j<=(inSt.L-2)){
+         for (i=0; i<=j;i++) {
+            total=i*j;
+            // printf("a: %i, b: %i, c: %i /%i\n",j,i,total,inSt.L);
+            if (inSt.L==(i+total+j)){ 
+               occurOfC0=j; occurOfC1=i; occurOfC2=total;   
+               printf("---------->Factors = a: %i, b: %i, c: %i\n",occurOfC0, occurOfC1, occurOfC2);
+               goto END;
+            }
+         }
+         j++;
+      }
+   }
+   
+   END:
    while (numOfSegmentsSatisfied < M) {
       counter=0;
-      occurOfC0=0; occurOfC1=0; occurOfC2=0;
+      occurOfC0=j; occurOfC1=i; occurOfC2=total;
       #pragma omp parallel num_threads(N)
       constructSE();
 

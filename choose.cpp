@@ -38,29 +38,22 @@ char chooseChar(int ranA, int ranC, INPUT inSt) {
       } else if (counter==2) {
          chosenChar=inSt.c0; occurOfC0++; 
       } else if (occurOfC0 + 2*occurOfC1 < occurOfC2) {
-         if (occurOfC0 + 2*occurOfC1 < occurOfC2+1) {
-            chosenChar=inSt.c0; occurOfC0++;}
-         else if (occurOfC0 + 2*occurOfC1 < occurOfC2+2){
+         if ((counter+2==inSt.L)) {
             chosenChar=inSt.c1; occurOfC1++;}
+         else {
+            chosenChar=inSt.c0; occurOfC0++;}
       } else if (((occurOfC0 + 2*occurOfC1 >= occurOfC2)&&(inSt.N<4)) ||(occurOfC0 + 2*occurOfC1 > occurOfC2)) {
          chosenChar=inSt.c2; occurOfC2++;
       }
       break;
 
       case 2:
-      if (counter==0) {
-         chosenChar=inSt.c2; occurOfC2++; 
-      } else if (counter==1) {
-         chosenChar=inSt.c1; occurOfC1++; 
-      } else if (counter==2) {
-         chosenChar=inSt.c0; occurOfC0++; 
-      } else if (occurOfC0 * occurOfC1 < occurOfC2) {
-         if ((occurOfC0+1) * occurOfC1 == occurOfC2) {
-            chosenChar=inSt.c0; occurOfC0++;
-         } else if ((occurOfC0 * (occurOfC1+1) == occurOfC2) || ((occurOfC0+1) * (occurOfC1+1) == occurOfC2)) {
-            chosenChar=inSt.c1; occurOfC1++; }
-      } else if (((occurOfC0 * occurOfC1 >= occurOfC2)&&(inSt.N<4)) || (occurOfC0 * occurOfC1 > occurOfC2)) {
-         chosenChar=inSt.c2; occurOfC2++;
+      if (occurOfC0>0) {
+            chosenChar=inSt.c0; occurOfC0--;
+      } else if (occurOfC1>0) {
+            chosenChar=inSt.c1; occurOfC1--;
+      } else if (occurOfC2>0) {
+         chosenChar=inSt.c2; occurOfC2--;
       }
       break;
       
